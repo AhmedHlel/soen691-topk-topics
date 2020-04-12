@@ -1,5 +1,3 @@
-
-
 ## Abstract
 
 With the advent of large sets of PDF files in several scientific applications, such as bioinformatics and neuroscience, there is a growing need to automatically identify a list of top-K topics in each set. This list could be used later to predict descriptions, keywords, or even cluster datasets.
@@ -30,9 +28,9 @@ The Toronto Paper Matching System (TPMS)[1] has been implemented to find the sui
 
 The dataset I will be using to implement my project is a list of papers published in the Neural Information Processing Systems conference (NeurIPS) between 1987 until 2016[6]. The dataset contains 6397 articles in total (approximately 5.5 GB) covering a wide range of topics including Artificial Intelligence, statistics, and neuroscience. As this is an unsupervised machine learning problem, the data does not contain any labels. The total number of processed words is in the range of 5 744 551.
 
-![Figure 1](/home/ahmed/Documents/courses/soen691/soen691-topk-topics/images/corpus _size_per_dataset.png)
+<p align="center"><img src="images/corpus_size_per_dataset.png"></p>
 
-​                                                                  Fig 1: Corpus Size per Dataset
+​ <p align="center">Fig 1: Corpus Size per Dataset</p>
 
 To further give more details about the dataset, Fig 1 shows the number of processed words per year. The graph shows that the size of the corpus increases every year simply because the number of accepted papers increases every year. The number of words ranges between 8000 and 400 000.
 
@@ -62,15 +60,15 @@ As our model the Latent Dirichlet Allocation (LDA) which we will discuss in the 
 
 Calculating the frequencies of our phrases in essential to work with the LDA implementation in Spark. For this reason, we used the CountVectorizer class provided by the Machine Learning (ML) library in pyspark. Internally, the class assigns an id to each distinct phrase and calculate each corresponding frequency. Therefore the result is a dataframe and each row contains a sparse vector. In other words, we can think of  our dataframe as a sparse matrix. The sparsity is adequate to optimize the heavy calculation performed by our model.
 
-![initial_data](/home/ahmed/Documents/courses/soen691/project/python-version/models/1987/initial_data.png)
+ <p align="center"><img src="images/initial_data.png"/>''</p>
 
-​								Fig 2: Frequency before removing 5%
+​								 <p align="center">Fig 2: Frequency before removing 5%</p>
 
 
 
-![clean_data](/home/ahmed/Documents/courses/soen691/project/python-version/models/1987/clean_data.png)
+<p align="center"><img src="images/clean_data.png"></p>
 
-​								Fig 3: Frequency after removing 5%
+​								<p align="center">Fig 3: Frequency after removing 5%<p>
 
 
 
@@ -94,14 +92,14 @@ My project will revolve around implementing an unsupervised algorithm capable of
 
 Initially, we started with a search grid in order to get the best hyper-parameters. The investigated hyper-parameters were the number of topics and the maximum number of iterations which Table 1 summarizes. As Table 1 shows, the investigated number of topics differ depending on the size of corpus. A thorough explanation will be mentioned in the results part.
 
-
+<p align="center">
 
 |                              | \|corpus\| < 300 000  | \|corpus\| > 300 000 |
 | ---------------------------- | :-------------------: | :------------------: |
 | Number of topics             | [20, 30, 50, 70, 100] |   [100, 120, 150 ]   |
 | Maximum number of iterations |     [20, 50, 80]      |     [20, 50, 80]     |
 
-​									Table 1: Hyper-parameters
+​									</p><p align="center">Table 1: Hyper-parameters </p>
 
 Additionally the hyper-parameter tuning help in determining the optimal parameters to use in order to train our model to better generalize.		 
 
@@ -121,15 +119,15 @@ Specifically we will use the c_v measure mentioned in the evaluation part in the
 
 In order to find the optimal models, it is important to proceed with hyper-parameter tuning using search grid. At first, we started our search over 5 values for the number of topics hyper-parameter as summarized in Table 1. 
 
-![coherence_vs_corpus_size](/home/ahmed/Documents/courses/soen691/soen691-topk-topics/images/coherence_vs_corpus_size.png)
+<p align="center"><img src="images/coherence_vs_corpus_size.png"></p>
 
-​								Fig 4 : Coherence vs Corpus size for 1988 - 2010
+​								<p align="center">Fig 4 : Coherence vs Corpus size for 1988 - 2010</p>
 
 Fig 3 shows the variation of the coherence values for the best topic in terms of the corpus size for the 1988 - 2010 datasets (dataset in 1987 was excluded because the coherence is relatively high 0.77). The graph shows that the coherence decreases as the size of the corpus increases. It started at 0.7 to reach 0.58 approximately. Fig 4 also shows a decreasing trend-line projecting a low coherence for the upcoming datasets because they have larger corpora as Fig 1 illustrates. In addition, we observe that the coherence drops below 0.6 for a corpus of size larger than 300 000.
 
 Given the previous observations, a different set of values for the number of topics hyper-parameter will be investigated when the corpus size is larger than 300 000. These values range between 100 and 150 in order to have a more optimal generalization for our final model.
 
-![new_coherence_vs_corpus_size](/home/ahmed/Documents/courses/soen691/soen691-topk-topics/images/new_coherence_vs_corpus_size.png)
+![new_coherence_vs_corpus_size](images/new_coherence_vs_corpus_size.png)
 
 ​							Fig 5: Coherence vs Corpus Size for dataset 1988 - 2016
 
@@ -139,25 +137,25 @@ Fig 5 shows the variation of the coherence of the best models in terms of the co
 
 The LDA model generates latent topics that the data spans over. Each latent topic is a set of phrases that are semantically-coherent and each token comes with its corresponding weight (importance) relative to its topic. The topics returned by the models after the hyper-parameter tuning include some of the phrases that are related to the nature of the dataset. A sample of these words are reported in Fig 6. Hence, it is important to remove them.
 
-![dataset_related_words](/home/ahmed/Documents/courses/soen691/soen691-topk-topics/images/dataset_related_words.png)
+<p align="center"><img src="images/dataset_related_words.png"></p>
 
-​								      Fig 6: dataset-related phrases
+​								      <p align="center" Fig 6: dataset-related phrases</p>
 
 Subsequently we wanted to investigate the effect of removing the dataset-related phrases on the coherence. In fact, Fig 7 shows the variation of the coherence before and after removing the dataset-related token. Generally the graphs show that the value of the coherence has improved. On average the improvement is 0.02. 
 
-![before_and_after_removing](/home/ahmed/Documents/courses/soen691/soen691-topk-topics/images/before_and_after_removing.png)
+<p align="center"><img src="images/before_and_after_removing.png"></p>
 
-​			Fig 7: Coherence per dataset before and after removing dataset-related phrases
+​			<p align="center">Fig 7: Coherence per dataset before and after removing dataset-related</p> phrases
 
 #### Results
 
 In this section, we present a sample of the actual latent topics generated by some of the final trained models. Fig 8 reports four latent topics for different years. From the semantically-coherent words and their respective weights we can conjecture the different corresponding topics in Table 2.
 
-![topics](/home/ahmed/Documents/courses/soen691/soen691-topk-topics/images/topics.png)
+<p align="center"><img src="images/topics.png"></p>
 
-​					                     Fig 8: A sample of the latent topics
+​					                     <p align="center">Fig 8: A sample of the latent topics</p>
 
-
+<p align="center">
 
 | 1987                                                         |
 | ------------------------------------------------------------ |
@@ -169,7 +167,7 @@ In this section, we present a sample of the actual latent topics generated by so
 | **2016**                                                     |
 | Given the terms fpnn, field, and field_prob we can say that probably the topic is about Field Probing Neural Networks. |
 
-​				  Table 2: Possible topics inferred from the terms reported in Fig 8
+</p>​				  <p align="center">Table 2: Possible topics inferred from the terms reported in Fig 8</p>
 
 
 
